@@ -4,7 +4,6 @@ from mysql.connector import Error
 
 app = Flask(__name__)
 
-# Database configuration
 db_config = {
     'host': 'localhost',         
     'database': 'adet',        
