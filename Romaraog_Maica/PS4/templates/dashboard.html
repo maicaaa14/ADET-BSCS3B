@@ -88,7 +88,7 @@
         .logout-link {
             display: inline-block; 
             padding: 10px 20px; 
-            background: linear-gradient(135deg, #ffd1dc, #e0f7fa, #fce4ec, #e8f5e9, #ffecb3, #f3e5f5); 
+            background: linear-gradient(135deg, #ffcc99, #d99cbe); 
             color: #333; 
             border: 2px solid #333; 
             border-radius: 5px; 
@@ -106,26 +106,26 @@
 <body>
     <div class="dashboard-container">
         <div class="dashboard-content">
-            <h1>Hello, {{ first_name }}!</h1>
+            <h1>Hello, {{ user.first_name }}!</h1>
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>First Name</th>
                         <th>Middle Name</th>
                         <th>Last Name</th>
-                        <th>Address</th>
-                        <th>Email Address</th>
                         <th>Contact Number</th>
+                        <th>Email Address</th>
+                        <th>Address</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>{{ user_details[0] }}</td>
-                        <td>{{ user_details[1] }}</td>
-                        <td>{{ user_details[2] }}</td>
-                        <td>{{ user_details[3] }}</td>
-                        <td>{{ user_details[4] }}</td>
-                        <td>{{ user_details[5] }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.middle_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.contact_number }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.address }}</td>
                     </tr>
                 </tbody>
             </table>

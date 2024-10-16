@@ -50,7 +50,7 @@ def registration():
                 INSERT INTO adet_user (first_name, middle_name, last_name, address, email, contact_number, password)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             '''
-            cursor.execute(insert_query, (first_name, middle_name, last_name, address, email, contact_number, password))  # Changed variable name here
+            cursor.execute(insert_query, (first_name, middle_name, last_name, address, email, contact_number, password))
             conn.commit()
 
             flash('Registration successful! Please login.', 'success')
@@ -68,42 +68,47 @@ def registration():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']  
-        password = encrypt_password(request.form['password'])  
+        email = request.form.get('email')
+        password = hashlib.sha256(request.form.get('password').encode()).hexdigest()
 
-        conn = get_db_connection()
-        if conn is None:
-            return "Database connection failed", 500
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM adet_user WHERE email = %s AND password = %s", (email, password))
+            user = cursor.fetchone()
+            cursor.close()
+            conn.close()
 
-        cursor = conn.cursor()
-        cursor.execute('SELECT id, first_name FROM adet_user WHERE email = %s AND password = %s', (email, password))  
-        user = cursor.fetchone()
-
-        if user:
-            session['loggedin'] = True
-            session['id'] = user[0]
-            session['first_name'] = user[1]
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Login failed. Check your credentials.', 'error')
-
-        cursor.close()
-        conn.close()
+            if user:
+                session['email'] = email  
+                return redirect(url_for('dashboard'))
+            else:
+                flash("Invalid credentials. Please try again.", "error")
+                return redirect(url_for('login'))
+        except mysql.connector.Error as err:
+            flash(f"Error: {err}", "error")
+            return redirect(url_for('login'))
 
     return render_template('login.html')
 
 # Dashboard route 
 @app.route('/dashboard')
 def dashboard():
-    if 'loggedin' in session:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT first_name, middle_name, last_name, address, email, contact_number FROM adet_user WHERE id = %s', (session['id'],))  
-        user_details = cursor.fetchone()
-
-        return render_template('dashboard.html', first_name=session['first_name'], user_details=user_details)
-    else:
+    if 'email' not in session:
         return redirect(url_for('login'))
+
+    user_email = session['email']
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT first_name, middle_name, last_name, contact_number, email, address FROM adet_user WHERE email = %s", (user_email,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+    except mysql.connector.Error as err:
+        return f"Error: {err}"
+
+    return render_template('dashboard.html', user=user)
 
 # Logout route
 @app.route('/logout')
